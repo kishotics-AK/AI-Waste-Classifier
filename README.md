@@ -143,6 +143,209 @@ Real-world performance can be affected by:
 
 ---
 
+## 🤖 AI/ML Workflow
+
+The AI Waste Classifier follows an end-to-end machine learning workflow, from dataset preparation to image classification and disposal guidance.
+
+```text
+                    ┌─────────────────────┐
+                    │   Waste Images      │
+                    │    (TrashNet)       │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Dataset Preparation │
+                    │ Resize / Normalize  │
+                    │ Train / Val / Test  │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │   MobileNetV3 Small │
+                    │   Image Classifier  │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     Training        │
+                    │   PyTorch + CPU     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Model Evaluation    │
+                    │ Accuracy / Precision│
+                    │ Recall / F1 Score   │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Trained Model       │
+                    │ waste_classifier_v2 │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │     FastAPI         │
+                    │   /predict API      │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Web Frontend        │
+                    │ HTML / CSS / JS     │
+                    └──────────┬──────────┘
+                               │
+                               ▼
+                    ┌─────────────────────┐
+                    │ Predicted Waste     │
+                    │ Class + Confidence  │
+                    │ Disposal Guidance   │
+                    └─────────────────────┘
+```
+
+### 1. Data Collection
+
+The project uses the **TrashNet dataset**, containing images belonging to six waste categories:
+
+* Cardboard
+* Glass
+* Metal
+* Paper
+* Plastic
+* Trash
+
+### 2. Data Preparation
+
+Images are prepared before training using the following preprocessing pipeline:
+
+```text
+Image
+  ↓
+Resize to 224 × 224
+  ↓
+Convert to Tensor
+  ↓
+Normalize using ImageNet mean/std
+  ↓
+Model-ready image
+```
+
+The dataset is divided into training, validation, and test sets.
+
+### 3. Model Training
+
+The classifier is built using **MobileNetV3 Small** with **PyTorch**.
+
+The original classification layer is replaced with a custom six-class output layer:
+
+```python
+model.classifier[3] = torch.nn.Linear(
+    model.classifier[3].in_features,
+    6
+)
+```
+
+The model learns visual patterns such as shapes, textures, edges, and colors that help distinguish different waste categories.
+
+### 4. Model Evaluation
+
+After training, the model is evaluated using:
+
+* Accuracy
+* Precision
+* Recall
+* F1 Score
+* Confusion Matrix
+
+The trained model achieved **81.25% accuracy on the held-out test set**.
+
+### 5. Model Inference
+
+The trained model is saved as:
+
+```text
+models/waste_classifier_v2.pth
+```
+
+When a user uploads an image:
+
+```text
+Uploaded Image
+      ↓
+Image Preprocessing
+      ↓
+MobileNetV3 Small
+      ↓
+Class Probabilities
+      ↓
+Top Prediction
+      ↓
+Confidence Score
+      ↓
+Disposal Guidance
+```
+
+### 6. API Integration
+
+**FastAPI** provides the backend inference API.
+
+```text
+POST /predict
+```
+
+The API receives an image, runs it through the trained PyTorch model, and returns the prediction, confidence score, top predictions, and disposal guidance.
+
+### 7. Frontend Integration
+
+The frontend is built using:
+
+* HTML
+* CSS
+* JavaScript
+
+JavaScript sends the uploaded image to the FastAPI backend using `fetch()` and displays the returned prediction dynamically.
+
+```text
+User Upload
+     ↓
+JavaScript
+     ↓
+FastAPI
+     ↓
+PyTorch Model
+     ↓
+Prediction
+     ↓
+Frontend Result
+```
+
+### 8. End-to-End Pipeline
+
+```text
+Dataset
+   ↓
+Preprocessing
+   ↓
+Model Training
+   ↓
+Evaluation
+   ↓
+Saved PyTorch Model
+   ↓
+FastAPI Backend
+   ↓
+Web Frontend
+   ↓
+Waste Classification
+   ↓
+Disposal Guidance
+```
+
+> **Note:** The project is developed as an educational AI/ML portfolio project. Real-world performance can vary depending on lighting, camera quality, object orientation, background, and waste appearance.
+
+
 ## 🗂️ Project Structure
 
 ```text
